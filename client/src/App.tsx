@@ -4,13 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Home from "./pages/Home";
 import FindBusinesses from "./pages/FindBusinesses";
 import SendEmails from "./pages/SendEmails";
 import NotFound from "./pages/NotFound";
-import Home from "./pages/Home";
-import Index from "./pages/Index";
+
 import AppLayout from "@/components/layout/AppLayout";
 
 const queryClient = new QueryClient();
@@ -28,14 +29,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          
-          {/* PUBLIC ROUTES */}
-          <Route path="/index" element={<Index />} />
 
+          {/* 🌍 PUBLIC ROUTES */}
+          <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* PROTECTED ROUTES WITH LAYOUT */}
+          {/* 🔐 PROTECTED ROUTES */}
           <Route
             element={
               <ProtectedRoute>
@@ -43,15 +43,12 @@ const App = () => (
               </ProtectedRoute>
             }
           >
-            {/* HOME */}
-            <Route path="/" element={<Home />} />
-
-            {/* APP PAGES */}
+            <Route path="/home" element={<Home />} />
             <Route path="/find-businesses" element={<FindBusinesses />} />
             <Route path="/send-emails" element={<SendEmails />} />
           </Route>
 
-          {/* FALLBACK */}
+          {/* ❌ FALLBACK */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

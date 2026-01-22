@@ -15,9 +15,9 @@ const Header = () => {
   /* ---------------- LOGO CLICK ---------------- */
   const handleLogoClick = () => {
     if (isLoggedIn) {
-      navigate("/"); // Home
+      navigate("/home"); // Home
     } else {
-      navigate("/index"); // Public landing
+      navigate("/"); // Public landing
     }
   };
 
