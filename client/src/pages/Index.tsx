@@ -31,7 +31,7 @@ const Index = () => {
 
               {/* Subheadline */}
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                Discover real businesses. When emails aren’t available, we show the best possible contact method like website or phone.
+                Discover real businesses and contact them. Freelance Reach powers professional email outreach through intelligent automation, helping you connect with real businesses at scale.
 </p>
 
               {/* CTA */}
