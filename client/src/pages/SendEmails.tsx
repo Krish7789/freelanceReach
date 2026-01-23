@@ -36,20 +36,19 @@ const SendEmails = () => {
   const [isSending, setIsSending] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-
   useEffect(() => {
-  const userId = localStorage.getItem("userId");
-  if (!userId) return;
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
 
-  api
-    .get(`/gmail/status/${userId}`)
-    .then((res) => {
-      setGmailConnected(Boolean(res.data.connected));
-    })
-    .catch(() => {
-      setGmailConnected(false);
-    });
-}, []);
+    api
+      .get(`/gmail/status/${userId}`)
+      .then((res) => {
+        setGmailConnected(Boolean(res.data.connected));
+      })
+      .catch(() => {
+        setGmailConnected(false);
+      });
+  }, []);
 
   /* ---------------- LOAD SELECTED BUSINESS ---------------- */
   useEffect(() => {
@@ -61,8 +60,7 @@ const SendEmails = () => {
 
     const b = parsed[0];
     setBusiness(b);
-setToEmail(b.email); 
-
+    setToEmail(b.email);
 
     // Default editable draft
     setSubject(`Regarding collaboration with ${b.name}`);
@@ -74,97 +72,93 @@ I hope you’re doing well.
 I came across your business and wanted to reach out to explore a potential collaboration.
 
 Best regards,
-`
+`,
     );
-    
-  }, []
-);
-
-
+  }, []);
 
   const connectGmail = () => {
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
-    toast.error("Please login first");
-    return;
-  }
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      toast.error("Please login first");
+      return;
+    }
 
-  window.location.href = `https://freelancereach.onrender.com/auth/google?state=${userId}`;
-};
-
+    window.location.href = `https://freelancereach.onrender.com/auth/google?state=${userId}`;
+  };
 
   const disconnectGmail = async () => {
-  const userId = localStorage.getItem("userId");
-  if (!userId) return;
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
 
-  try {
-    await api.post("/gmail/disconnect", { userId });
+    try {
+      await api.post("/gmail/disconnect", { userId });
 
-    toast.success("Gmail disconnected. Please reconnect.");
+      toast.success("Gmail disconnected. Please reconnect.");
 
-    // 🔥 THIS LINE FIXES YOUR ISSUE
-    setGmailConnected(false);
-  } catch {
-    toast.error("Failed to disconnect Gmail");
-  }
-};
-
-
+      // 🔥 THIS LINE FIXES YOUR ISSUE
+      setGmailConnected(false);
+    } catch {
+      toast.error("Failed to disconnect Gmail");
+    }
+  };
 
   /* ---------------- GENERATE EMAIL (AI) ---------------- */
   const generateEmailWithAI = async () => {
-  if (!business) return;
+    if (!business) return;
 
-  
+    const profileRaw = localStorage.getItem("profile");
 
-  try {
-    setIsGenerating(true);
+    try {
+      setIsGenerating(true);
 
-    const res = await api.post("/emails/generate", {
-      business,
-      profile: JSON.parse(profileRaw),
-      intent:
-        "Introduce myself as a software developer and propose collaboration to improve their website or IT services. Suggest a call.",
-    });
+      const res = await api.post("/emails/generate", {
+        business,
 
-    setSubject(res.data.subject);
-    setBody(res.data.body);
+        sender: {
+          name: localStorage.getItem("userName"),
+          role: "Software Developer",
+        },
+        intent:
+          "Introduce myself as a software developer and propose collaboration to improve their website or IT services. Suggest a call.",
+      });
 
-    toast.success("AI-generated email ready");
-  } catch (err: any) {
-    toast.error(
-      err?.response?.data?.message || "Failed to generate email with AI"
-    );
-  } finally {
-    setIsGenerating(false);
-  }
-};
+      setSubject(res.data.subject);
+      setBody(res.data.body);
 
+      toast.success("AI-generated email ready");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || "Failed to generate email with AI",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   /* ---------------- SEND EMAIL ---------------- */
   const sendEmail = async () => {
-  // 🚫 Prevent double execution
-  if (isSending) return;
+    // 🚫 Prevent double execution
+    if (isSending) return;
 
-  if (!business) return;
+    if (!business) return;
 
-  if (!subject || !body) {
-    toast.error("Subject and body are required");
-    return;
-  }
+    if (!subject || !body) {
+      toast.error("Subject and body are required");
+      return;
+    }
 
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
-    toast.error("Please login first");
-    navigate("/login");
-    return;
-  }
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      toast.error("Please login first");
+      navigate("/login");
+      return;
+    }
 
-  const normalizedBody = body
-  .replace(/\r\n/g, "\n")        // normalize Windows line endings
-  .replace(/\n{3,}/g, "\n\n")    // max 1 empty line
-  .trim();
-  const finalBody = `
+    const normalizedBody = body
+      .replace(/\r\n/g, "\n") // normalize Windows line endings
+      .replace(/\n{3,}/g, "\n\n") // max 1 empty line
+      .trim();
+    const finalBody = `
 Hi ${business.name},
 
 ${normalizedBody}
@@ -174,27 +168,24 @@ Krish Kumar
 Software Developer
 `.trim();
 
+    try {
+      setIsSending(true);
 
-  try {
-    setIsSending(true);
+      await api.post("/gmail/send", {
+        userId,
+        to: toEmail,
+        subject,
+        body: normalizedBody,
+      });
 
-   await api.post("/gmail/send", {
-  userId,
-  to: toEmail,
-  subject,
-  body: normalizedBody,
-});
-
-
-    toast.success("Email sent successfully");
-    navigate("/status");
-  } catch (err: any) {
-    toast.error(err?.response?.data?.message || "Email sending failed");
-  } finally {
-    setIsSending(false);
-  }
-};
-
+      toast.success("Email sent successfully");
+      navigate("/status");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Email sending failed");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   /* ---------------- EMPTY STATE ---------------- */
   if (!business) {
@@ -203,9 +194,7 @@ Software Developer
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">
-              No business selected
-            </h2>
+            <h2 className="text-xl font-semibold mb-2">No business selected</h2>
             <Button onClick={() => navigate("/find-businesses")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Find Businesses
@@ -218,23 +207,20 @@ Software Developer
 
   /* ---------------- UI ---------------- */
   return (
-    
     <div className="flex min-h-screen flex-col bg-background">
-
       <main className="flex-1 py-8">
         <div className="max-w-3xl mx-auto px-4">
           <Card>
             <CardHeader>
-             {gmailConnected ? (
-  <Button variant="outline" onClick={disconnectGmail}>
-    Disconnect Gmail
-  </Button>
-) : (
-  <Button variant="outline" onClick={connectGmail}>
-    Connect Gmail
-  </Button>
-)}
-
+              {gmailConnected ? (
+                <Button variant="outline" onClick={disconnectGmail}>
+                  Disconnect Gmail
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={connectGmail}>
+                  Connect Gmail
+                </Button>
+              )}
 
               <CardTitle>Send Email</CardTitle>
               <CardDescription>
@@ -243,15 +229,12 @@ Software Developer
             </CardHeader>
 
             <CardContent className="space-y-4">
-              
               {/* TO */}
               <Input
-  placeholder="Recipient email"
-  value={toEmail}
-  onChange={(e) => setToEmail(e.target.value)}
-/>
-
-
+                placeholder="Recipient email"
+                value={toEmail}
+                onChange={(e) => setToEmail(e.target.value)}
+              />
 
               {/* SUBJECT */}
               <Input

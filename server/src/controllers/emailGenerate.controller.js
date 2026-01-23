@@ -2,10 +2,12 @@ const axios = require("axios");
 
 const generateEmail = async (req, res) => {
   try {
-    const { business, profile, intent } = req.body;
+    const { business, sender, intent } = req.body;
 
-    if (!business || !profile) {
-      return res.status(400).json({ message: "Missing data" });
+   if (!business || !intent || !sender?.name) {
+  return res.status(400).json({
+    message: "Business, intent, and sender name are required",
+  });
     }
 
     const prompt = `
@@ -15,9 +17,8 @@ Write a personalized cold email for the following purpose:
 ${intent}
 
 SENDER PROFILE:
-Name: ${profile.name}
-Role: ${profile.role}
-Skills: ${profile.skills}
+Name: ${sender.name}
+Role: ${sender.role}
 
 BUSINESS DETAILS:
 Business Name: ${business.name}
@@ -25,11 +26,11 @@ Category: ${business.category}
 Website: ${business.website}
 
 IMPORTANT RULES:
-- Professional, friendly tone
-- Not salesy
-- No buzzwords
-- Soft call-to-action
-- Concise
+- Use a professional, friendly tone
+- Personalize the email based on the business website
+- Do NOT sound salesy or pushy
+- End the email with the sender's real name
+- Keep spacing clean and natural (no extra blank lines)
 
 OUTPUT FORMAT (JSON ONLY):
 {
