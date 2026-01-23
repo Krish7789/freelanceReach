@@ -65,7 +65,7 @@ exports.googleCallback = async (req, res) => {
     );
 
     // 🔁 Redirect back to frontend
-    res.redirect("http://localhost:8080/send-emails?gmail=connected");
+    res.redirect("https://freelancereach.vercel.app/send-emails?gmail=connected");
   } catch (err) {
     console.error("Google OAuth Error:", err);
     res.status(500).send("Google authentication failed");
