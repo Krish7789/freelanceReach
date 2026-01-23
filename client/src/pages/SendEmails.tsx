@@ -115,11 +115,7 @@ Best regards,
   const generateEmailWithAI = async () => {
   if (!business) return;
 
-  const profileRaw = localStorage.getItem("profile");
-  if (!profileRaw) {
-    toast.error("Please complete your profile first");
-    return;
-  }
+  
 
   try {
     setIsGenerating(true);
