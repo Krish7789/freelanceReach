@@ -16,10 +16,10 @@ import AppLayout from "@/components/layout/AppLayout";
 
 const queryClient = new QueryClient();
 
-/* 🔐 Route Guard */
+/* 🔐 AUTH GUARD */
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const isLoggedIn = !!localStorage.getItem("token");
-  return isLoggedIn ? children : <Navigate to="/login" replace />;
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
 };
 
 const App = () => (
@@ -29,23 +29,40 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-
           {/* 🌍 PUBLIC ROUTES */}
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* 🔐 PROTECTED ROUTES */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/home" element={<Home />} />
-            <Route path="/find-businesses" element={<FindBusinesses />} />
-            <Route path="/send-emails" element={<SendEmails />} />
+          {/* 🧠 APP LAYOUT (ROUTES MUST EXIST FIRST) */}
+          <Route element={<AppLayout />}>
+            {/* 🔐 PROTECTED PAGES */}
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/find-businesses"
+              element={
+                <ProtectedRoute>
+                  <FindBusinesses />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/send-emails"
+              element={
+                <ProtectedRoute>
+                  <SendEmails />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           {/* ❌ FALLBACK */}
