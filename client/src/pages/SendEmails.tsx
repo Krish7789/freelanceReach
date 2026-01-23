@@ -186,7 +186,7 @@ Software Developer
       });
 
       toast.success("Email sent successfully");
-      navigate("/status");
+      navigate("/send-emails");
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Email sending failed");
     } finally {
