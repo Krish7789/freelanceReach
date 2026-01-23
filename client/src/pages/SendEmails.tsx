@@ -50,6 +50,13 @@ const SendEmails = () => {
       });
   }, []);
 
+  useEffect(() => {
+  if (!localStorage.getItem("token")) {
+    navigate("/login");
+  }
+}, []);
+
+
   /* ---------------- LOAD SELECTED BUSINESS ---------------- */
   useEffect(() => {
     const stored = localStorage.getItem("selectedBusinesses");
