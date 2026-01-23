@@ -23,48 +23,34 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isLoading) return;
+  e.preventDefault();
+  if (isLoading) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    try {
-      /* ---------------- LOGIN ---------------- */
-      const res = await api.post("/auth/login", {
-        email: email.trim().toLowerCase(),
-        password,
-      });
+  try {
+    const res = await api.post("/auth/login", {
+      email: email.trim().toLowerCase(),
+      password,
+    });
 
-      const data = res.data;
+    const data = res.data;
 
-      /* ---------------- SAVE AUTH DATA ---------------- */
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userId", data.userId);
-      localStorage.setItem("userName", data.name);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("userId", data.userId);
+    localStorage.setItem("userName", data.name);
 
-      /* ---------------- CHECK PROFILE STATUS ---------------- */
-      const statusRes = await api.get(
-        `/profile/status/${data.userId}`
-      );
+    toast.success("Welcome back!");
+    navigate("/home"); // ✅ direct, no status check
+  } catch (err: any) {
+    toast.error(
+      err?.response?.data?.message || "Login failed"
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-      const statusData = statusRes.data;
-
-      /* ---------------- NAVIGATE ---------------- */
-      toast.success("Welcome back!");
-
-      if (statusData.completed) {
-        navigate("/find-businesses");
-      } else {
-        navigate("/profile-setup");
-      }
-    } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message || "Login failed"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
   useEffect(() => {
   if (localStorage.getItem("token")) {
     navigate("/");
