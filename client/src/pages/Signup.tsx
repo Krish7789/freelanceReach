@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import API_BASE_URL from "@/lib/api";
+import api from "@/lib/api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -22,27 +22,34 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  /* 🔁 Redirect if already logged in */
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/home", { replace: true });
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
+      const res = await api.post("/auth/signup", {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
       });
 
-      if (!res.ok) {
-        throw new Error("Signup failed");
-      }
+      const data = res.data;
 
       toast.success("Account created successfully!");
       navigate("/login");
-    } catch (err) {
-      toast.error("Signup failed. Email may already be registered.");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || "Signup failed"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -53,11 +60,13 @@ const Signup = () => {
       <Header />
 
       <main className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md animate-fade-in-up">
+        <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Create account</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Create account
+            </CardTitle>
             <CardDescription>
-              Sign up to start finding clients
+              Start using FreelanceReach today
             </CardDescription>
           </CardHeader>
 
@@ -66,8 +75,8 @@ const Signup = () => {
               <div className="space-y-2">
                 <Label>Name</Label>
                 <Input
-                  placeholder="Your name"
                   value={name}
+                  placeholder="Your Name"
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
@@ -88,7 +97,7 @@ const Signup = () => {
                 <Label>Password</Label>
                 <Input
                   type="password"
-                  placeholder="••••••••"
+                  placeholder="•••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
